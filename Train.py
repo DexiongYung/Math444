@@ -34,7 +34,7 @@ def function_to_approximate(x: float, x_1: float):
     """
     Function is x + (1 / 2) * x^2 + (1 / 100) * x^3
     """
-    return [x + (1/2) * math.pow(x, 2) + (1/100) * math.pow(x_1, 3)]
+    return x + (1/2) * math.pow(x, 2) + (1/100) * math.pow(x_1, 3)
 
 def plot_losses(loss: list, x_label: str = "Iteration", y_label: str = "MSE", folder: str = "Result", filename: str = HIDDEN_SZ):
     x = list(range(len(loss)))
