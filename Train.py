@@ -32,11 +32,11 @@ class MLP(torch.nn.Module):
         
         return self.output.forward(activation_out)
 
-def function_to_approximate(x: float):
+def function_to_approximate(x: float, x_1: float):
     """
-    Function is x + (1 / 2) * x^2 + (1 / 100)
+    Function is x + (1 / 2) * x^2 + (1 / 100) * x^3
     """
-    return x + (1/2) * math.pow(x, 2) + (1/100)
+    return x + (1/2) * math.pow(x, 2) + (1/100) * math.pow(x_1,3)
 
 def plot_losses(loss: list, x_label: str = "Iteration", y_label: str = "MSE", folder: str = "Result", filename: str = HIDDEN_SZ):
     x = list(range(len(loss)))
@@ -48,12 +48,12 @@ def plot_losses(loss: list, x_label: str = "Iteration", y_label: str = "MSE", fo
     plt.savefig(f"{folder}/{filename}")
     plt.close()
 
-def train(model: MLP, x: float, criterion):
+def train(model: MLP, x: float, x_1: float, criterion):
     optimizer.zero_grad()
 
-    input = torch.Tensor([x]).to(DEVICE)
+    input = torch.Tensor([x, x_1]).to(DEVICE)
     approximation = model.forward(input)
-    real_output = function_to_approximate(x)
+    real_output = function_to_approximate(x, x_1)
     loss = criterion(approximation, torch.Tensor([real_output]).to(DEVICE))
 
     loss.backward()
@@ -64,8 +64,9 @@ def train_iteration(iterations: int, model: MLP, criterion):
     total_loss = 0
     for i in range(iterations):
         x = random.uniform(0, 100)
+        x_1 = random.uniform(0, 100)
 
-        train(model, x, criterion)
+        train(model, x, x_1, criterion)
 
         if i % PRINT == 0:
             all_losses.append(total_loss / PRINT)
@@ -73,8 +74,8 @@ def train_iteration(iterations: int, model: MLP, criterion):
             plot_losses(all_losses)
             torch.save({'weights': model.state_dict()}, f"Weight/{HIDDEN_SZ}.path.tar")
 
-def test(model: MLP, x: float):
-    input = torch.Tensor([x]).to(DEVICE)
+def test(model: MLP, x: float, x_1: float):
+    input = torch.Tensor([x, x_1]).to(DEVICE)
     output = model.forward(input)
 
     return output
@@ -88,8 +89,8 @@ def test_iteration(model: MLP, iterations: int):
         x = random.uniform(0, 100)
         x_1 = random.uniform(0, 100)
 
-        actual = function_to_approximate(x)
-        approximation = test(model, x).item()
+        actual = function_to_approximate(x, x_1)
+        approximation = test(model, x, x_1).item()
         
 
         if isclose(actual, approximation):
