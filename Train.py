@@ -13,6 +13,7 @@ DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 HIDDEN_SZ = args.hidden_size
 LR = 0.0005
 PRINT = 1
+ITERATIONS = 5000
 
 class MLP(torch.nn.Module):
     def __init__(self, hidden_size: int):
@@ -74,4 +75,4 @@ def train_iteration(iterations: int, model: MLP, criterion):
 model = MLP(HIDDEN_SZ)
 criterion = torch.nn.MSELoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=LR)
-train_iteration(1, model, criterion)
+train_iteration(ITERATIONS, model, criterion)
