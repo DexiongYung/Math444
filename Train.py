@@ -15,7 +15,8 @@ HIDDEN_SZ = args.hidden_size
 CONTINUE_TRAINING = args.continue_training == 1
 LR = 0.0005
 PRINT = 1
-ITERATIONS = 500000
+BATCH_SZ = 1000
+ITERATIONS = 50000
 
 class MLP(torch.nn.Module):
     def __init__(self, hidden_size: int):
@@ -48,13 +49,23 @@ def plot_losses(loss: list, x_label: str = "Iteration", y_label: str = "MSE", fo
     plt.savefig(f"{folder}/{filename}")
     plt.close()
 
-def train(model: MLP, x: float, x_1: float, criterion):
+def train(model: MLP, batch: int, criterion):
     optimizer.zero_grad()
+    input_lst = []
+    target_lst = []
 
-    input = torch.Tensor([x, x_1]).to(DEVICE)
+    for i in range(batch):
+        x = random.uniform(0, 100)
+        x_1 = random.uniform(0, 100)
+        real_output = function_to_approximate(x, x_1)
+
+        input_lst.append([x, x_1])
+        target_lst.append(real_output)
+    
+    input = torch.Tensor(input_lst).to(DEVICE)
     approximation = model.forward(input)
-    real_output = function_to_approximate(x, x_1)
-    loss = criterion(approximation, torch.Tensor([real_output]).to(DEVICE))
+    
+    loss = criterion(approximation.squeeze(1), torch.Tensor(target_lst).to(DEVICE))
 
     loss.backward()
     optimizer.step()
@@ -65,10 +76,7 @@ def train_iteration(iterations: int, model: MLP, criterion):
     all_losses = []
     total_loss = 0
     for i in range(iterations):
-        x = random.uniform(0, 100)
-        x_1 = random.uniform(0, 100)
-
-        total_loss += train(model, x, x_1, criterion)
+        total_loss += train(model, BATCH_SZ, criterion)
 
         if i % PRINT == 0:
             all_losses.append(total_loss / PRINT)
