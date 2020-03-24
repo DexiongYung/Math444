@@ -15,7 +15,7 @@ HIDDEN_SZ = args.hidden_size
 CONTINUE_TRAINING = args.continue_training == 1
 LR = 0.0005
 PRINT = 1
-ITERATIONS = 1000000
+ITERATIONS = 500000
 
 class MLP(torch.nn.Module):
     def __init__(self, hidden_size: int):
@@ -59,6 +59,8 @@ def train(model: MLP, x: float, x_1: float, criterion):
     loss.backward()
     optimizer.step()
 
+    return loss.item()
+
 def train_iteration(iterations: int, model: MLP, criterion):
     all_losses = []
     total_loss = 0
@@ -66,7 +68,7 @@ def train_iteration(iterations: int, model: MLP, criterion):
         x = random.uniform(0, 100)
         x_1 = random.uniform(0, 100)
 
-        train(model, x, x_1, criterion)
+        total_loss += train(model, x, x_1, criterion)
 
         if i % PRINT == 0:
             all_losses.append(total_loss / PRINT)
